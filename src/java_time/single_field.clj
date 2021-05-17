@@ -6,7 +6,8 @@
             [java-time.util :as jt.u]
             [java-time.clock :as jt.clock]
             [java-time.defconversion :refer (conversion!)])
-  (:import [java.time.temporal TemporalAccessor TemporalAmount TemporalUnit ChronoUnit]
+  (:import [java.time.temporal TemporalAccessor TemporalAmount TemporalUnit ChronoUnit
+            UnsupportedTemporalTypeException]
            [java.time.format DateTimeFormatter]
            [java.time Clock Year Month YearMonth MonthDay DayOfWeek ZoneId Instant]))
 
@@ -17,10 +18,10 @@
              (filter (fn [[_ uv]] (not (zero? uv)))))
         [our-unit our-value] (first (filter (fn [[tu]] (= tu u)) non-zero-units))]
     (when-not our-unit
-      (throw (java.time.temporal.UnsupportedTemporalTypeException.
+      (throw (UnsupportedTemporalTypeException.
                (format "No unit: %s found in %s!" u a))))
     (when (> (count non-zero-units) 1)
-      (throw (java.time.temporal.UnsupportedTemporalTypeException.
+      (throw (UnsupportedTemporalTypeException.
                (format "Cannot use: %s, expected only %s to be non-zero!" a u))))
     (long our-value)))
 

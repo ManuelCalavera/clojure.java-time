@@ -3,18 +3,19 @@
              [convert :as jt.c]
              [local :as jt.l]
              [temporal :as jt.t]
-             [defconversion :refer [conversion!]]]))
+             [defconversion :refer [conversion!]]])
+  (:import [java.util Date]))
 
-(defn ^java.util.Date java-date
-  "Creates a `java.util.Date` out of any combination of arguments valid for
+(defn ^Date java-date
+  "Creates a `Date` out of any combination of arguments valid for
   `java-time/instant` or the Instant itself.
 
   A `java.util.Date` represents an instant in time. It's a direct analog of the
   `java.time.Instant` type introduced in the JSR-310. Please consider using the
   `java.time.Instant` (through `java-time/instant`) directly."
-  ([] (java.util.Date/from (jt.t/instant)))
-  ([a] (java.util.Date/from (jt.t/instant a)))
-  ([a b] (java.util.Date/from (jt.t/instant a b))))
+  ([] (Date/from (jt.t/instant)))
+  ([a] (Date/from (jt.t/instant a)))
+  ([a b] (Date/from (jt.t/instant a b))))
 
 (defn- arities [type ctor n-args]
   (for [i (range (inc n-args))]

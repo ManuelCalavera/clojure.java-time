@@ -18,3 +18,4 @@ pom.xml.asc
 # Calva
 .lsp/
 .calva/
+.clj-kondo/.cache

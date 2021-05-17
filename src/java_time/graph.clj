@@ -1,9 +1,6 @@
 (ns java-time.graph
-  (:refer-clojure :exclude (vector))
-  (:require [clojure.set :as sets]
-            [clojure.string :as string]
-            ;; ~10-15% faster with clj-tuple
-            [clj-tuple :refer (vector)]
+  (:require ;; ~10-15% faster with clj-tuple
+            [clj-tuple :as ct]
             [java-time.potemkin.util :as u]
             [java-time.util :as jt.u])
   (:import [java.util PriorityQueue Queue]))
@@ -34,7 +31,7 @@
                     (recur (inc idx))
                     true)
                   false)))))
-  (hashCode [o]
+  (hashCode [_]
     (bit-xor (hash types) arity))
   (toString [_]
     (pr-str types)))
@@ -89,7 +86,7 @@
 (defn- combinations [n s]
   (letfn [(combos [n s]
             (if (zero? n)
-              (list (vector (vector) s))
+              (list (ct/vector (ct/vector) s))
               (mapcat expand (combos (dec n) s))))]
     (map first (combos n s))))
 
@@ -103,8 +100,8 @@
              (filterv #(apply = 1 (map - (rest %) %))))))))
 
 (defn- as-source [types-so-far t [dst c]]
-  (vector
-    (vector (types (conj types-so-far t)) dst)
+  (ct/vector
+    (ct/vector (types (conj types-so-far t)) dst)
     c))
 
 (defn- search-for-possible-sources
@@ -124,12 +121,12 @@
       (if (map? v)
         (concat r (collect-targets v))
         (concat r v)))
-    (vector) v))
+    (ct/vector) v))
 
 (defn- add-conversion [m ^Types src dst conversion]
   (let [add #(update % (peek (.types src))
-                     (fnil conj (vector))
-                     (vector dst conversion))]
+                     (fnil conj (ct/vector))
+                     (ct/vector dst conversion))]
     (if (> (.arity src) 1)
       (update-in m (pop (.types src)) add)
       (add m))))
@@ -153,11 +150,11 @@
          (filter #(assignable? % dst))
          (set)))
   (possible-conversions [_ src]
-    (let [result (volatile! (vector))]
+    (let [result (volatile! (ct/vector))]
       (search-for-possible-sources
         result
         (get m-by-arity (.arity ^Types src))
-        (vector)
+        (ct/vector)
         (first (.types ^Types src))
         (next (.types ^Types src)))
       @result)))
@@ -179,14 +176,14 @@
 
 (defn- conj-path [^ConversionPath p src dst ^Conversion c]
   (ConversionPath.
-    (conj (.path p) (vector src dst))
+    (conj (.path p) (ct/vector src dst))
     (conj (.fns p) (.f c))
     (conj (.visited? p) dst)
     (+ (.cost p) (.cost c))))
 
 (def graph-conversion-path
   (fn [g src dst]
-    (let [path (ConversionPath. (vector) (vector) #{src} 0)]
+    (let [path (ConversionPath. (ct/vector) (ct/vector) #{src} 0)]
       (if (assignable? src dst)
         path
         (let [q (doto (PriorityQueue.) (.add path))
@@ -209,13 +206,13 @@
           (subvec v (inc (last idxs)) (count v))))
 
 (defn- index-conversions [^Types src idxs [[_ ^Types replacement] ^Conversion conv]]
-  (vector src (types (replace-range (.types src) (.types replacement) idxs))
-          (fn [vs]
-            (let [vs (vec vs)]
-              (replace-range vs
-                             ((.f conv) (subvec vs (first idxs) (inc (last idxs))))
-                             idxs)))
-          (.cost conv)))
+  (ct/vector src (types (replace-range (.types src) (.types replacement) idxs))
+             (fn [vs]
+               (let [vs (vec vs)]
+                 (replace-range vs
+                                ((.f conv) (subvec vs (first idxs) (inc (last idxs))))
+                                idxs)))
+             (.cost conv)))
 
 (defn- sub-conversions
   "Given an `src` types, generate all of the conversions from these types that
@@ -232,7 +229,7 @@
               [src -> String]"
   [g ^Types src]
   (if (> (.arity src) max-arity)
-    (vector)
+    (ct/vector)
     (->> (continuous-combinations (.arity src))
          (mapcat
            (fn [idxs]
@@ -244,7 +241,7 @@
                     (map #(index-conversions src idxs %)))))))))
 
 (defn- with-conversions [g convs]
-  (loop [g g, new-conversions (vector)
+  (loop [g g, new-conversions (ct/vector)
          [src dst f cost :as con] (first convs)
          convs (next convs)]
     (if con
@@ -275,7 +272,7 @@
 ;; requested source and the destination doesn't contain them either we conclude
 ;; that it's impossible to convert the source to the destination.
 (defn- has-source-type? [g ^Types src, ^Types dst]
-  (let [src-types (map (comp types vector) (.types src))
+  (let [src-types (map (comp types ct/vector) (.types src))
         contains-src-types? (fn [s] (some #(or (assignable? % s)
                                                (contains-types? s %)) src-types))]
     (or (contains-src-types? dst)
@@ -291,7 +288,7 @@
               [new-conversions g'] (with-conversions g more-conversions)
               accepted-conversions (filter (fn [[conv-src _ _ cost]]
                                              (>= max-cost cost)) new-conversions)]
-          (recur g' (reduce (fn [q [_ dst _ _]] (conj q (vector dst (inc step))))
+          (recur g' (reduce (fn [q [_ dst _ _]] (conj q (ct/vector dst (inc step))))
                             (pop q) accepted-conversions))))
       g)))
 
@@ -304,10 +301,10 @@
 
 (defn- convert-via [path]
   (condp = (count (:path path))
-    0 (vector path (fn [x] x))
-    1 (vector path (->> path :fns first))
-    (let [fns (->> path :fns (apply vector))]
-      (vector path (fn [v] (reduce (fn [v f] (f v)) v fns))))))
+    0 (ct/vector path (fn [x] x))
+    1 (ct/vector path (->> path :fns first))
+    (let [fns (->> path :fns (apply ct/vector))]
+      (ct/vector path (fn [v] (reduce (fn [v f] (f v)) v fns))))))
 
 (defn conversion-fn
   "Create a function which will convert between the `src` and the `dst`

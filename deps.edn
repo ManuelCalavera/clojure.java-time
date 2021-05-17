@@ -1,2 +1,5 @@
-{:deps
- {clj-tuple/clj-tuple {:mvn/version "0.2.2"}}}
+{:deps    {clj-tuple/clj-tuple         {:mvn/version "0.2.2"}
+        ;;    org.threeten/threeten-extra {:mvn/version "1.6.0"}
+           }
+ :aliases {:kondo {:extra-deps {clj-kondo/clj-kondo {:mvn/version "2021.04.23"}}
+                   :main-opts  ["-m" "clj-kondo.main" "--lint" "src"]}}}

@@ -7,6 +7,7 @@
             [java-time.defconversion :refer (conversion! deffactory)])
   (:import [java.time ZoneId Clock LocalDate LocalTime LocalDateTime Instant
             ZonedDateTime OffsetDateTime OffsetTime]
+           [java.time.format DateTimeFormatter]
            [java.time.temporal TemporalAccessor]))
 
 (deffactory local-date
@@ -128,13 +129,13 @@
     (.atTime ld (local-time)))
   2)
 
-(conversion! [java.time.format.DateTimeFormatter CharSequence] LocalDate
+(conversion! [DateTimeFormatter CharSequence] LocalDate
   #(LocalDate/from (jt.f/parse %1 %2)))
 
-(conversion! [java.time.format.DateTimeFormatter CharSequence] LocalTime
+(conversion! [DateTimeFormatter CharSequence] LocalTime
   #(LocalTime/from (jt.f/parse %1 %2)))
 
-(conversion! [java.time.format.DateTimeFormatter CharSequence] LocalDateTime
+(conversion! [DateTimeFormatter CharSequence] LocalDateTime
   #(LocalDateTime/from (jt.f/parse %1 %2)))
 
 (conversion! Number LocalDate
@@ -176,6 +177,6 @@
   (fn [^LocalDateTime ldt]
     [(.toLocalDate ldt) (.toLocalTime ldt)]))
 
-(conversion! CharSequence java.time.format.DateTimeFormatter
+(conversion! CharSequence DateTimeFormatter
   jt.f/formatter)
 

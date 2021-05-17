@@ -1,7 +1,6 @@
 (ns java-time.format
   (:refer-clojure :exclude (format))
-  (:require [clojure.string :as string]
-            [java-time.core :as jt.c]
+  (:require [java-time.core :as jt.c]
             [java-time.util :as jt.u])
   (:import [java.time.temporal TemporalAccessor]
            [java.time.format DateTimeFormatter DateTimeFormatterBuilder ResolverStyle]

@@ -1,7 +1,6 @@
 (ns java-time.zone
   (:require [java-time.core :as jt.c :refer (value)]
             [java-time.temporal :as jt.t]
-            [java-time.util :as jt.u]
             [java-time.amount :as jt.a]
             [java-time.format :as jt.f]
             [java-time.clock :as jt.clock]
@@ -10,7 +9,8 @@
   (:import [java.time.temporal TemporalAccessor]
            [java.time.format DateTimeFormatter]
            [java.time Clock Instant LocalDate LocalTime LocalDateTime
-            ZoneId ZoneOffset OffsetDateTime OffsetTime ZonedDateTime]))
+            ZoneId ZoneOffset OffsetDateTime OffsetTime ZonedDateTime DateTimeException]
+           [java.util TimeZone GregorianCalendar]))
 
 ;;;;; Zone Id
 
@@ -23,8 +23,8 @@
           s (int (* 60 (- m-n m)))]
       [h m s])))
 
-(conversion! java.util.TimeZone ZoneId
-  (fn [^java.util.TimeZone z]
+(conversion! TimeZone ZoneId
+  (fn [^TimeZone z]
     (.toZoneId z)))
 
 (conversion! CharSequence ZoneId
@@ -55,8 +55,8 @@
              (instance? Clock o)
              (clock->zone-offset o)
 
-             (instance? java.time.temporal.TemporalAccessor o)
-             (ZoneOffset/from ^java.time.temporal.TemporalAccessor o)
+             (instance? TemporalAccessor o)
+             (ZoneOffset/from ^TemporalAccessor o)
 
              (string? o)
              (ZoneOffset/of ^String o)
@@ -65,7 +65,7 @@
              (let [[h m s] (to-hms o)]
                (zone-offset h m s))
 
-             :else (throw (java.time.DateTimeException.
+             :else (throw (DateTimeException.
                             (format "Could not convert %s to a ZoneOffset!" o)))))
   ([h m] (ZoneOffset/ofHoursMinutes h m))
   ([h m s] (ZoneOffset/ofHoursMinutesSeconds h m s)))
@@ -269,13 +269,13 @@
   (fn [^Instant i, ^ZoneId z]
     (OffsetTime/ofInstant i z)))
 
-(conversion! [java.time.format.DateTimeFormatter CharSequence] ZonedDateTime
+(conversion! [DateTimeFormatter CharSequence] ZonedDateTime
   #(ZonedDateTime/from (jt.f/parse %1 %2)))
 
-(conversion! [java.time.format.DateTimeFormatter CharSequence] OffsetDateTime
+(conversion! [DateTimeFormatter CharSequence] OffsetDateTime
   #(OffsetDateTime/from (jt.f/parse %1 %2)))
 
-(conversion! [java.time.format.DateTimeFormatter CharSequence] OffsetTime
+(conversion! [DateTimeFormatter CharSequence] OffsetTime
   #(OffsetTime/from (jt.f/parse %1 %2)))
 
 (conversion! Number ZonedDateTime
@@ -310,8 +310,8 @@
   (fn [y m d]
     (offset-date-time y m d 0)))
 
-(conversion! java.util.GregorianCalendar ZonedDateTime
-  (fn [^java.util.GregorianCalendar cal]
+(conversion! GregorianCalendar ZonedDateTime
+  (fn [^GregorianCalendar cal]
     (.toZonedDateTime cal)))
 
 (defprotocol HasOffset
@@ -430,7 +430,7 @@
     (< (.millis c) (.millis ^Clock o))))
 
 ;; Avoid cyclic dep
-(extend-type java.time.format.DateTimeFormatter
+(extend-type DateTimeFormatter
   jt.c/HasZone
   (with-zone [dtf zone]
     (.withZone dtf (zone-id zone))))

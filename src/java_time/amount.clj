@@ -6,7 +6,7 @@
             [java-time.properties :as jt.p]
             [java-time.convert :as jt.convert]
             [java-time.defconversion :refer (conversion! deffactory)])
-  (:import [java.time Duration Period]
+  (:import [java.time Duration Period DateTimeException]
            [java.time.temporal ChronoUnit TemporalAmount Temporal TemporalUnit]))
 
 (defn- ^Duration d-plus [^Duration cp, ^TemporalAmount o]
@@ -195,9 +195,9 @@
         (-> (.getDays o)
             (jt.convert/convert-amount :days k)
             :whole)
-        (throw (java.time.DateTimeException. "Period contains years or months")))
+        (throw (DateTimeException. "Period contains years or months")))
       (if (zero? (.getDays o))
         (-> (.toTotalMonths o)
             (jt.convert/convert-amount :months k)
             :whole)
-        (throw (java.time.DateTimeException. "Period contains days"))))))
+        (throw (DateTimeException. "Period contains days"))))))

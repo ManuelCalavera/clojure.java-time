@@ -1,7 +1,8 @@
 (ns java-time.adjuster
   (:require [java-time.util :as jt.u]
             [java-time.single-field :as jt.sf])
-  (:import [java.time.temporal TemporalAdjusters TemporalAdjuster]))
+  (:import [java.time DateTimeException]
+           [java.time.temporal Temporal TemporalAdjusters TemporalAdjuster]))
 
 (def base-adjusters {:first-day-of-month [(TemporalAdjusters/firstDayOfMonth) 0]
                      :last-day-of-month [(TemporalAdjusters/lastDayOfMonth) 0]
@@ -32,9 +33,9 @@
       adj
       (if (= (count args) nargs)
         (apply adj args)
-        (throw (java.time.DateTimeException.
+        (throw (DateTimeException.
                  (str "Adjuster: " (name kw) " cannot be created from" args "!")))))
-    (throw (java.time.DateTimeException.
+    (throw (DateTimeException.
              (str "Adjuster: " (name kw) " not found!")))))
 
 (defn adjust

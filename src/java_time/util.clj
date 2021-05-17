@@ -16,13 +16,13 @@
 
 (defmacro if-threeten-extra [then-body else-body]
   (if (try (Class/forName "org.threeten.extra.Temporals")
-           (catch Throwable e))
+           (catch Throwable _))
     `(do ~then-body)
     `(do ~else-body)))
 
 (defmacro when-threeten-extra [& body]
   (if (try (Class/forName "org.threeten.extra.Temporals")
-           (catch Throwable e))
+           (catch Throwable _))
     `(do ~@body)))
 
 (defmacro when-joda-time-loaded
@@ -32,7 +32,7 @@
   must be on the classpath at compile time!"
   [& body]
   (if (try (Class/forName "org.joda.time.DateTime")
-           (catch Throwable e))
+           (catch Throwable _))
     `(do ~@body)))
 
 ;; From Medley, C Weavejester

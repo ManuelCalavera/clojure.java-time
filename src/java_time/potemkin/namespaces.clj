@@ -20,7 +20,7 @@
   "Makes sure that all changes to `src` are reflected in `dst`."
   [src dst]
   (add-watch src dst
-    (fn [_ src old new]
+    (fn [_ src _ _]
       (alter-var-root dst (constantly @src))
       (alter-meta! dst merge (dissoc (meta src) :name)))))
 
@@ -34,7 +34,7 @@
      (let [vr (resolve sym)
            m (meta vr)
            n (or name (:name m))
-           arglists (:arglists m)
+          ;;  arglists (:arglists m)
            protocol (:protocol m)]
        (when-not vr
          (throw (IllegalArgumentException. (str "Don't recognize " sym))))
@@ -57,8 +57,8 @@
   ([sym name]
      (let [vr (resolve sym)
            m (meta vr)
-           n (or name (:name m))
-           arglists (:arglists m)]
+          ;;  arglists (:arglists m)
+           n (or name (:name m))]
        (when-not vr
          (throw (IllegalArgumentException. (str "Don't recognize " sym))))
        (when-not (:macro m)
@@ -79,9 +79,9 @@
   ([sym name]
      (let [vr (resolve sym)
            m (meta vr)
+          ;;  nspace (:ns m)
            n (or name (:name m))
-           n (if (:dynamic m) (with-meta n {:dynamic true}) n)
-           nspace (:ns m)]
+           n (if (:dynamic m) (with-meta n {:dynamic true}) n)]
        (when-not vr
          (throw (IllegalArgumentException. (str "Don't recognize " sym))))
        `(do

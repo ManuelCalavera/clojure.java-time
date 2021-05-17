@@ -1,6 +1,5 @@
 (ns java-time.temporal
-  (:require [clojure.string :as string]
-            [java-time.core :as jt.c :refer (value)]
+  (:require [java-time.core :as jt.c :refer (value)]
             [java-time.util :as jt.u]
             [java-time.properties :as jt.p]
             [java-time.format :as jt.f]
@@ -12,7 +11,8 @@
            [java.time.chrono Chronology]
            [java.time DateTimeException Clock
             Period Duration MonthDay DayOfWeek Month Year
-            ZoneOffset Instant]))
+            ZoneOffset Instant]
+           [java.util Date Calendar]))
 
 (def writable-range-property-fns
   {:with-min-value (fn [p] (jt.c/with-value p (jt.c/min-value p)))
@@ -48,8 +48,8 @@
 (value-property Month ChronoField/MONTH_OF_YEAR)
 (value-property Year ChronoField/YEAR_OF_ERA)
 (value-property ZoneOffset ChronoField/OFFSET_SECONDS
-                :with-value-fn-sym ofTotalSeconds
-                :get-value-fn-sym getTotalSeconds)
+                :with-value-fn-sym ZoneOffset/ofTotalSeconds
+                :get-value-fn-sym ZoneOffset/getTotalSeconds)
 
 (jt.u/when-threeten-extra
   (import [org.threeten.extra AmPm DayOfMonth DayOfYear Quarter YearQuarter])
@@ -327,12 +327,12 @@
   (fn [^Clock c]
     (Instant/now c)))
 
-(conversion! java.util.Date Instant
-  (fn [^java.util.Date dt]
+(conversion! Date Instant
+  (fn [^Date dt]
     (.toInstant dt)))
 
-(conversion! java.util.Calendar Instant
-  (fn [^java.util.Calendar c]
+(conversion! Calendar Instant
+  (fn [^Calendar c]
     (.toInstant c)))
 
 (conversion! CharSequence Instant

@@ -1,0 +1,1 @@
+{:lint-as {java-time.defconversion/deffactory clojure.core/defn}}
